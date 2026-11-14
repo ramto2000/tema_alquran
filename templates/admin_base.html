@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div class="admin-side-title">PANEL ADMIN</div>
+    <a href="{{ url_for('admin_home') }}">▦ Ringkasan</a>
+    <a href="{{ url_for('admin_themes') }}">◈ Tema Utama</a>
+    <a href="{{ url_for('admin_subthemes') }}">☷ Subtema</a>
+    <a href="{{ url_for('admin_mappings') }}">⌕ Pemetaan Ayat</a>
+    <a href="/">↗ Lihat Website</a>
+    <form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="side-logout">Keluar Admin</button></form>
+  </aside>
+  <section class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+    {% block admin_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

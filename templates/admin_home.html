@@ -1,0 +1,6 @@
+{% extends 'admin_base.html' %}{% block title %}Dashboard Admin{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">PENGELOLAAN KONTEN</div><h1>Dashboard Admin</h1><p>Kelola struktur tema dan tinjau klasifikasi ayat.</p></div></div>
+<div class="admin-stats"><div><b>{{ stats.themes }}</b><span>Tema utama</span></div><div><b>{{ stats.subthemes }}</b><span>Subtema</span></div><div><b>{{ '{:,}'.format(stats.mappings).replace(',', '.') }}</b><span>Pemetaan ayat</span></div><div><b>{{ stats.manual }}</b><span>Pemetaan manual</span></div></div>
+<div class="admin-cards"><a href="{{ url_for('admin_themes') }}"><span>◈</span><h3>Kelola Tema Utama</h3><p>Tambah, ubah deskripsi, atau hapus tema.</p></a><a href="{{ url_for('admin_subthemes') }}"><span>☷</span><h3>Kelola Subtema</h3><p>Atur subtema dan kata kunci klasifikasi.</p></a><a href="{{ url_for('admin_mappings') }}"><span>⌕</span><h3>Pemetaan Ayat</h3><p>Cari ayat dan tambahkan atau hapus klasifikasi.</p></a></div>
+<div class="notice"><b>Catatan</b><p>Pemetaan otomatis berbasis kata/frasa merupakan kandidat awal. Tinjau konteks ayat sebelum menetapkan klasifikasi sebagai hasil kajian.</p></div>
+{% endblock %}

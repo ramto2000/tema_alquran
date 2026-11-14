@@ -1,0 +1,64 @@
+
+==================== templates\admin_base.html ====================
+{% extends 'base.html' %}
+{% block content %}
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div class="admin-side-title">PANEL ADMIN</div>
+    <a href="{{ url_for('admin_home') }}">▦ Ringkasan</a>
+    <a href="{{ url_for('admin_themes') }}">◈ Tema Utama</a>
+    <a href="{{ url_for('admin_subthemes') }}">☷ Subtema</a>
+    <a href="{{ url_for('admin_mappings') }}">⌕ Pemetaan Ayat</a>
+    <a href="/">↗ Lihat Website</a>
+    <form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="side-logout">Keluar Admin</button></form>
+  </aside>
+  <section class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+    {% block admin_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}
+
+==================== templates\admin_home.html ====================
+{% extends 'admin_base.html' %}{% block title %}Dashboard Admin{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">PENGELOLAAN KONTEN</div><h1>Dashboard Admin</h1><p>Kelola struktur tema dan tinjau klasifikasi ayat.</p></div></div>
+<div class="admin-stats"><div><b>{{ stats.themes }}</b><span>Tema utama</span></div><div><b>{{ stats.subthemes }}</b><span>Subtema</span></div><div><b>{{ '{:,}'.format(stats.mappings).replace(',', '.') }}</b><span>Pemetaan ayat</span></div><div><b>{{ stats.manual }}</b><span>Pemetaan manual</span></div></div>
+<div class="admin-cards"><a href="{{ url_for('admin_themes') }}"><span>◈</span><h3>Kelola Tema Utama</h3><p>Tambah, ubah deskripsi, atau hapus tema.</p></a><a href="{{ url_for('admin_subthemes') }}"><span>☷</span><h3>Kelola Subtema</h3><p>Atur subtema dan kata kunci klasifikasi.</p></a><a href="{{ url_for('admin_mappings') }}"><span>⌕</span><h3>Pemetaan Ayat</h3><p>Cari ayat dan tambahkan atau hapus klasifikasi.</p></a></div>
+<div class="notice"><b>Catatan</b><p>Pemetaan otomatis berbasis kata/frasa merupakan kandidat awal. Tinjau konteks ayat sebelum menetapkan klasifikasi sebagai hasil kajian.</p></div>
+{% endblock %}
+
+==================== templates\admin_login.html ====================
+{% extends 'base.html' %}{% block title %}Login Admin{% endblock %}{% block content %}
+<div class="login-wrap"><form class="admin-form login-card" method="post"><div class="eyebrow">AREA TERBATAS</div><h1>Masuk Admin</h1><p>Kelola tema, subtema, dan pemetaan ayat Al-Qur'an.</p>{% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}"><label>Username</label><input name="username" required autofocus autocomplete="username"><label>Password</label><input name="password" type="password" required autocomplete="current-password"><button class="primary-btn">Masuk ke Admin</button><a class="back-link" href="/">← Kembali ke halaman utama</a></form></div>
+{% endblock %}
+
+==================== templates\admin_mappings.html ====================
+{% extends 'admin_base.html' %}{% block title %}Pemetaan Ayat{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">KOREKSI KLASIFIKASI</div><h1>Pemetaan Ayat</h1><p>Cari ayat berdasarkan kata, frasa terjemahan, nama surah, atau nomor referensi (contoh 2:255).</p></div></div>
+<form class="admin-search" method="get"><input name="q" value="{{ q }}" placeholder="Cari: sabar, rezeki, Al-Baqarah, 2:255"><button class="primary-btn">Cari Ayat</button></form>
+{% if q %}<div class="admin-result-title">Hasil pencarian: {{ rows|length }} ayat (maksimal 100)</div>{% for r in rows %}<article class="admin-verse"><div class="verse-top"><b>{{ r.nama_surat }} · {{ r.nomor_surat }}:{{ r.nomor_ayat }}</b></div><div class="arabic" dir="rtl">{{ r.teks_arab }}</div><p>{{ r.terjemahan_indonesia }}</p><div class="mapping-tags">{% for tag in r.tags %}<span class="mapping-tag">{{ tag.tema }} / {{ tag.subtema }} <form method="post" action="{{ url_for('admin_mapping_delete',mid=tag.mapping_id) }}" onsubmit="return confirm('Hapus pemetaan ini?')"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="q" value="{{ q }}"><button title="Hapus pemetaan">×</button></form></span>{% else %}<span class="muted-label">Belum memiliki pemetaan</span>{% endfor %}</div><form class="quick-map" method="post"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="nomor_surat" value="{{ r.nomor_surat }}"><input type="hidden" name="nomor_ayat" value="{{ r.nomor_ayat }}"><input type="hidden" name="q" value="{{ q }}"><select name="subtheme_id" required><option value="">Pilih tema / subtema untuk ditambahkan</option>{% for st in subthemes %}<option value="{{ st.id }}">{{ st.theme_name }} — {{ st.name }}</option>{% endfor %}</select><button class="small-btn">＋ Tambahkan</button></form></article>{% endfor %}{% elif not q %}<div class="empty">Masukkan kata kunci atau nomor ayat untuk mulai mengelola pemetaan.</div>{% endif %}
+{% endblock %}
+
+==================== templates\admin_subthemes.html ====================
+{% extends 'admin_base.html' %}{% block title %}Kelola Subtema{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">STRUKTUR KAJIAN</div><h1>Subtema</h1><p>Atur rincian pembahasan di bawah setiap tema utama.</p></div><a class="primary-btn" href="{{ url_for('admin_subtheme_form') }}">＋ Tambah Subtema</a></div>
+<div class="table-wrap"><table><thead><tr><th>Subtema</th><th>Tema utama</th><th>Kata kunci</th><th>Ayat</th><th>Aksi</th></tr></thead><tbody>{% for r in rows %}<tr><td><b>{{ r.name }}</b></td><td>{{ r.theme_name }}</td><td class="keyword-cell">{{ r.keywords|fromjson|join(', ') }}</td><td>{{ r.mapping_count }}</td><td class="actions"><a href="{{ url_for('admin_subtheme_form',sid=r.id) }}">Edit</a><form method="post" action="{{ url_for('admin_subtheme_delete',sid=r.id) }}" onsubmit="return confirm('Hapus subtema dan semua pemetaan ayatnya?')"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="danger-link">Hapus</button></form></td></tr>{% else %}<tr><td colspan="5">Belum ada subtema.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}
+
+==================== templates\admin_subtheme_form.html ====================
+{% extends 'admin_base.html' %}{% block title %}Form Subtema{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">STRUKTUR KAJIAN</div><h1>{{ 'Edit Subtema' if row else 'Tambah Subtema' }}</h1><p>Kata kunci dipisahkan dengan koma. Saat disimpan, sistem memperbarui kandidat pemetaan otomatis untuk subtema ini; pemetaan manual tetap dipertahankan.</p></div></div>
+<form class="admin-form form-card" method="post"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><label>Tema utama</label><select name="theme_id" required><option value="">Pilih tema</option>{% for t in themes %}<option value="{{ t.id }}" {% if row and row.theme_id==t.id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select><label>Nama subtema</label><input name="name" required maxlength="180" value="{{ row.name if row else '' }}" placeholder="Contoh: Kesabaran"><label>Kata kunci pemicu</label><textarea name="keywords" rows="4" placeholder="sabar, bersabarlah, orang-orang yang sabar">{{ row.keywords|fromjson|join(', ') if row else '' }}</textarea><div class="form-actions"><a class="secondary-btn" href="{{ url_for('admin_subthemes') }}">Batal</a><button class="primary-btn">Simpan Subtema</button></div></form>
+{% endblock %}
+
+==================== templates\admin_themes.html ====================
+{% extends 'admin_base.html' %}{% block title %}Kelola Tema{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">STRUKTUR KAJIAN</div><h1>Tema Utama</h1><p>Daftar tema yang ditampilkan pada halaman publik.</p></div><a class="primary-btn" href="{{ url_for('admin_theme_form') }}">＋ Tambah Tema</a></div>
+<div class="table-wrap"><table><thead><tr><th>No.</th><th>Nama tema</th><th>Deskripsi</th><th>Subtema</th><th>Pemetaan</th><th>Aksi</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ r.id }}</td><td><b>{{ r.name }}</b></td><td>{{ r.description }}</td><td>{{ r.sub_count }}</td><td>{{ r.mapping_count }}</td><td class="actions"><a href="{{ url_for('admin_theme_form',tid=r.id) }}">Edit</a><form method="post" action="{{ url_for('admin_theme_delete',tid=r.id) }}" onsubmit="return confirm('Hapus tema beserta seluruh subtema dan pemetaannya?')"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="danger-link">Hapus</button></form></td></tr>{% else %}<tr><td colspan="6">Belum ada tema.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}
+
+==================== templates\admin_theme_form.html ====================
+{% extends 'admin_base.html' %}{% block title %}Form Tema{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">STRUKTUR KAJIAN</div><h1>{{ 'Edit Tema' if row else 'Tambah Tema' }}</h1><p>Isi nama dan ringkasan pokok pembahasan.</p></div></div>
+<form class="admin-form form-card" method="post"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><label>Nama tema</label><input name="name" required maxlength="180" value="{{ row.name if row else '' }}" placeholder="Contoh: Akhlak dan Pembentukan Karakter"><label>Deskripsi tema</label><textarea name="description" rows="4" placeholder="Jelaskan inti pembahasan tema...">{{ row.description if row else '' }}</textarea><div class="form-actions"><a class="secondary-btn" href="{{ url_for('admin_themes') }}">Batal</a><button class="primary-btn">Simpan Tema</button></div></form>
+{% endblock %}

@@ -1,0 +1,4 @@
+{% extends 'admin_base.html' %}{% block title %}Form Tema{% endblock %}{% block admin_content %}
+<div class="admin-heading"><div><div class="eyebrow">STRUKTUR KAJIAN</div><h1>{{ 'Edit Tema' if row else 'Tambah Tema' }}</h1><p>Isi nama dan ringkasan pokok pembahasan.</p></div></div>
+<form class="admin-form form-card" method="post"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><label>Nama tema</label><input name="name" required maxlength="180" value="{{ row.name if row else '' }}" placeholder="Contoh: Akhlak dan Pembentukan Karakter"><label>Deskripsi tema</label><textarea name="description" rows="4" placeholder="Jelaskan inti pembahasan tema...">{{ row.description if row else '' }}</textarea><div class="form-actions"><a class="secondary-btn" href="{{ url_for('admin_themes') }}">Batal</a><button class="primary-btn">Simpan Tema</button></div></form>
+{% endblock %}

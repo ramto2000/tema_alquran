@@ -1,0 +1,84 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Pencarian Ayat{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="/">Beranda</a> / Pencarian
+</div>
+
+<section class="topic-hero">
+    <div class="eyebrow">PENCARIAN TERJEMAHAN</div>
+
+    <h1>Temukan Ayat Al-Qur'an</h1>
+
+    <p>
+        Cari satu kata atau frasa dalam terjemahan Al-Qur'an.
+    </p>
+
+    <form class="search" action="/cari" method="get">
+        <input
+            type="text"
+            name="q"
+            value="{{ q }}"
+            placeholder="Contoh: sabar, orang tua, orang-orang yang beriman..."
+            autocomplete="off"
+        >
+
+        <button type="submit">Cari</button>
+    </form>
+</section>
+
+{% if q %}
+
+<div class="result-head">
+    <h2>Hasil Pencarian</h2>
+    <span>{{ rows|length }} ayat (maksimal 300)</span>
+</div>
+
+{% for r in rows %}
+
+<article class="verse">
+
+    <div class="verse-top">
+        <span class="ref">
+            {{ r.surat }} · {{ r.n }}:{{ r.a }}
+        </span>
+    </div>
+
+    <div class="arabic" dir="rtl">
+        {{ r.arab }}
+    </div>
+
+    <p class="terjemahan">
+        {{ r.translation | highlight(q) }}
+    </p>
+
+    {% if r.tags %}
+    <div class="tags">
+
+        {% for t in r.tags %}
+        <a class="subtag" href="/tema/{{ t.id }}">
+            {{ t.tema }} · {{ t.subtema }}
+        </a>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
+</article>
+
+{% else %}
+
+<div class="empty">
+    Tidak ada ayat yang cocok dengan pencarian
+    <strong>{{ q }}</strong>.
+</div>
+
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}
